@@ -12,6 +12,8 @@
 		5CB875ED225F22B900B27569 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5CB875EB225F22B900B27569 /* Main.storyboard */; };
 		5CB875EF225F22BB00B27569 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5CB875EE225F22BB00B27569 /* Assets.xcassets */; };
 		5CB875F2225F22BB00B27569 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5CB875F0225F22BB00B27569 /* LaunchScreen.storyboard */; };
+		5CB875FA225F358700B27569 /* LineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CB875F9225F358700B27569 /* LineView.swift */; };
+		5CB875FC225F361000B27569 /* BubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CB875FB225F361000B27569 /* BubbleView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +24,8 @@
 		5CB875EE225F22BB00B27569 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5CB875F1225F22BB00B27569 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5CB875F3225F22BB00B27569 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5CB875F9225F358700B27569 /* LineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineView.swift; sourceTree = "<group>"; };
+		5CB875FB225F361000B27569 /* BubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubbleView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +60,8 @@
 			children = (
 				5CB875E7225F22B900B27569 /* AppDelegate.swift */,
 				5CB875E9225F22B900B27569 /* ViewController.swift */,
+				5CB875F9225F358700B27569 /* LineView.swift */,
+				5CB875FB225F361000B27569 /* BubbleView.swift */,
 				5CB875EB225F22B900B27569 /* Main.storyboard */,
 				5CB875EE225F22BB00B27569 /* Assets.xcassets */,
 				5CB875F0225F22BB00B27569 /* LaunchScreen.storyboard */,
@@ -137,6 +143,8 @@
 			files = (
 				5CB875EA225F22B900B27569 /* ViewController.swift in Sources */,
 				5CB875E8225F22B900B27569 /* AppDelegate.swift in Sources */,
+				5CB875FC225F361000B27569 /* BubbleView.swift in Sources */,
+				5CB875FA225F358700B27569 /* LineView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
