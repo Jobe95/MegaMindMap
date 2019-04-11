@@ -10,11 +10,14 @@ import UIKit
 
 protocol BubbleViewDelegate {
     func didSelect(_ bubble: BubbleView)
+    func didEdit(_ bubble: BubbleView)
 }
 
 class BubbleView: UIView {
     
+    var color: UIColor?
     var lines = [LineView]()
+    var label = UILabel()
     
     var delegate: BubbleViewDelegate?
     
@@ -23,14 +26,22 @@ class BubbleView: UIView {
         let frame = CGRect(x: atPoint.x-size/2, y: atPoint.y-size/2, width: size, height: size)
         super.init(frame: frame)
         
-        backgroundColor = #colorLiteral(red: 0.3176470697, green: 0.07450980693, blue: 0.02745098062, alpha: 1)
+        backgroundColor = UIColor.random()
         layer.cornerRadius = size/2
         let pan = UIPanGestureRecognizer(target: self, action: #selector(didPanInBubble(_:)))
         addGestureRecognizer(pan)
+        
+        let doubleTap = UITapGestureRecognizer(target: self, action: #selector(didDoubleTapInBubble(_:)))
+        doubleTap.numberOfTapsRequired = 2
+        addGestureRecognizer(doubleTap)
+        
         let tap = UITapGestureRecognizer(target: self, action: #selector(didTapInBubble(_:)))
+        tap.require(toFail: doubleTap)
         addGestureRecognizer(tap)
+        
+        
         // SKapa en label för din bubbla
-        let label = UILabel(frame: bounds)
+        label.frame = bounds
         label.textAlignment = .center
         label.numberOfLines = 3
         label.text = "Text"
@@ -53,6 +64,8 @@ class BubbleView: UIView {
             for line in lines {
                 line.update()
             }
+        } else if gesture.state == .began {
+            superview?.bringSubviewToFront(self)
         }
     }
     
@@ -65,7 +78,33 @@ class BubbleView: UIView {
         if delegate != nil {
             delegate?.didSelect(bubble)
         }
+    }
+    
+    @objc func didDoubleTapInBubble(_ gesture: UITapGestureRecognizer) {
+        print("Did tap in bubble")
+        guard let bubble = gesture.view as? BubbleView else {
+            return
+        }
         
+        if delegate != nil {
+            delegate?.didEdit(bubble)
+        }
+    }
+    
+    func select() {
+        color = backgroundColor
+        backgroundColor = #colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1)
+    }
+    
+    func deselect() {
+        backgroundColor = color
+    }
+    
+    func delete() {
+        for line in lines {
+            line.removeFromSuperview()
+        }
+        removeFromSuperview()
     }
     
     /*
@@ -76,4 +115,16 @@ class BubbleView: UIView {
     }
     */
 
+}
+
+
+extension UIColor {
+    
+    static func random() -> UIColor {
+        let randomRed = CGFloat(arc4random_uniform(256))/255.0
+        let randomGreen = CGFloat(arc4random_uniform(256))/255.0
+        let randomBlue = CGFloat(arc4random_uniform(256))/255.0
+        
+        return UIColor(red: randomRed, green: randomGreen, blue: randomBlue, alpha: 1)
+    }
 }

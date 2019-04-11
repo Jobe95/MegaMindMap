@@ -27,7 +27,7 @@ class ViewController: UIViewController, BubbleViewDelegate {
         //TODO: Hitta CGPoint och lägg till bubbla
         print("Did tap")
         if selectedBubble != nil {
-            selectedBubble?.backgroundColor = #colorLiteral(red: 0.3176470697, green: 0.07450980693, blue: 0.02745098062, alpha: 1)
+            selectedBubble?.deselect()
             selectedBubble = nil
         } else {
             let tapPoints = gesture.location(in: view)
@@ -39,11 +39,25 @@ class ViewController: UIViewController, BubbleViewDelegate {
     
     //MARK: - BubbleViewDelegate
     
+    func didEdit(_ bubble: BubbleView) {
+        //TODO: - Visa popup med textfält
+        let textInput = UIAlertController(title: "Edit bubble text", message: "Enter the text you want in the bubble", preferredStyle: .alert)
+        textInput.addTextField { (textField) in
+            textField.text = bubble.label.text
+        }
+        textInput.addAction(UIAlertAction(title: "Save", style: .default, handler: { (action) in
+            let textField = textInput.textFields![0] as UITextField
+            bubble.label.text = textField.text
+        }))
+        
+        present(textInput, animated: true, completion: nil)
+    }
+    
     func didSelect(_ bubble: BubbleView) {
         if selectedBubble != nil {
             if bubble == selectedBubble {
                 // Delete bubble
-                bubble.removeFromSuperview()
+                bubble.delete()
                 
             } else {
                 //TODO: Connect bubbles!
@@ -54,13 +68,12 @@ class ViewController: UIViewController, BubbleViewDelegate {
                 bubble.lines.append(line)
             }
             //TODO: Deselect selectedBubble
-            selectedBubble?.backgroundColor = #colorLiteral(red: 0.3176470697, green: 0.07450980693, blue: 0.02745098062, alpha: 1)
+            selectedBubble?.deselect()
             selectedBubble = nil
         } else {
             selectedBubble = bubble
-            selectedBubble?.backgroundColor = #colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1)
+            selectedBubble?.select()
         }
     }
     
 }
-
