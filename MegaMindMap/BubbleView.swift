@@ -11,23 +11,48 @@ import UIKit
 protocol BubbleViewDelegate {
     func didSelect(_ bubble: BubbleView)
     func didEdit(_ bubble: BubbleView)
+    func didPan(_ bubble: BubbleView)
 }
 
 class BubbleView: UIView {
     
-    var color: UIColor?
-    var lines = [LineView]()
-    var label = UILabel()
-    
     var delegate: BubbleViewDelegate?
+    var color: UIColor?
+    var uuid = UUID().uuidString
+    var lines = [LineView]()
+    private var label = UILabel()
+    
+    var text: String {
+        get {
+            return label.text ?? "Text"
+        }
+        set (str){
+            label.text = str
+            updateFrame()
+        }
+    }
+    
+    //MARK: - Selected property
+    
+    var selected: Bool = false {
+        didSet {
+            setNeedsDisplay()
+        }
+    }
+    
+    let minSize: CGFloat = 80
+    let maxWidth: CGFloat = 240
+    let padding: CGFloat = 8
+    //MARK: - Init
     
     init(_ atPoint: CGPoint) {
-        let size:CGFloat = 80
-        let frame = CGRect(x: atPoint.x-size/2, y: atPoint.y-size/2, width: size, height: size)
+        
+        let frame = CGRect(x: atPoint.x-minSize/2, y: atPoint.y-minSize/2, width: minSize, height: minSize)
         super.init(frame: frame)
         
-        backgroundColor = UIColor.random()
-        layer.cornerRadius = size/2
+        color = UIColor.random()
+        backgroundColor = UIColor.clear
+        
         let pan = UIPanGestureRecognizer(target: self, action: #selector(didPanInBubble(_:)))
         addGestureRecognizer(pan)
         
@@ -50,6 +75,16 @@ class BubbleView: UIView {
         addSubview(label)
     }
     
+    func data() -> [String:String] {
+        var data = [String:String]()
+        
+        data["uuid"] = uuid
+        data["center"] = NSCoder.string(for: center)
+        data["text"] = text
+        
+        return data
+    }
+    
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
@@ -63,10 +98,13 @@ class BubbleView: UIView {
             //Uppdatera alla linjer
             for line in lines {
                 line.update()
+                
             }
         } else if gesture.state == .began {
             superview?.bringSubviewToFront(self)
         }
+        
+        delegate?.didPan(self)
     }
     
     @objc func didTapInBubble(_ gesture: UITapGestureRecognizer) {
@@ -91,14 +129,6 @@ class BubbleView: UIView {
         }
     }
     
-    func select() {
-        color = backgroundColor
-        backgroundColor = #colorLiteral(red: 0.9529411793, green: 0.6862745285, blue: 0.1333333403, alpha: 1)
-    }
-    
-    func deselect() {
-        backgroundColor = color
-    }
     
     func delete() {
         for line in lines {
@@ -107,13 +137,34 @@ class BubbleView: UIView {
         removeFromSuperview()
     }
     
-    /*
-    // Only override draw() if you perform custom drawing.
-    // An empty implementation adversely affects performance during animation.
-    override func draw(_ rect: CGRect) {
-        // Drawing code
+    //MARK: - Draw
+    
+    func updateFrame() {
+        // Beräkna frame för label och vy
+        
+        let labelSize = label.sizeThatFits(
+            CGSize(width: maxWidth-padding*2, height: minSize-padding*2))
+        let bubbleWidth = max(minSize, labelSize.width+padding*2)
+        label.frame = CGRect(x: padding,
+                             y: padding,
+                             width: bubbleWidth-padding*2,
+                             height: minSize-padding*2)
+        frame = CGRect(x: center.x-bubbleWidth/2,
+                       y: center.y-minSize/2,
+                       width: bubbleWidth,
+                       height: minSize)
+        
+        setNeedsDisplay()
     }
-    */
+
+    override func draw(_ rect: CGRect) {
+        let path = UIBezierPath(roundedRect: bounds, byRoundingCorners: [.bottomLeft, .topRight], cornerRadii: CGSize(width: bounds.size.width/2, height: bounds.size.height/2))
+        // VILLKOR ? SANT : FALSKT
+        selected ? UIColor.yellow.setFill() : color?.setFill()
+        path.fill()
+        
+    }
+    
 
 }
 

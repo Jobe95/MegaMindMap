@@ -22,11 +22,20 @@ class LineView: UIView {
     }
     
     
+    func data() -> [String:String] {
+        var data = [String:String]()
+        data["fromUuid"] = fromView?.uuid
+        data["toUuid"] = toView?.uuid
+        
+        return data
+    }
+    
+    
     func update() {
         //TODO: Beräkna ny frame och påkalla ny utritning
         if fromView != nil && toView != nil {
-            self.frame = fromView!.frame.union(toView!.frame)
-            self.setNeedsDisplay()
+            frame = fromView!.frame.union(toView!.frame)
+            setNeedsDisplay()
         }
     }
     
@@ -49,7 +58,7 @@ class LineView: UIView {
                       controlPoint1: origin + controlVector,
                       controlPoint2: destination - controlVector)
         path.lineWidth = 2.0
-        UIColor.black.setStroke()
+        fromView!.color?.setStroke()
         path.stroke()
     }
 

@@ -12,7 +12,7 @@ class ViewController: UIViewController, BubbleViewDelegate, UIScrollViewDelegate
 
     var selectedBubble: BubbleView?
     var superScrollView: UIScrollView?
-    var sueperContentView: UIView?
+    var superContenView: UIView?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,15 +28,84 @@ class ViewController: UIViewController, BubbleViewDelegate, UIScrollViewDelegate
         superScrollView?.maximumZoomScale = 2.0
         
         // KOnfigurera content view
-        sueperContentView = UIView(frame: CGRect(x: 0, y: 0, width: contentSize, height: contentSize))
-        superScrollView?.addSubview(sueperContentView!)
+        superContenView = UIView(frame: CGRect(x: 0, y: 0, width: contentSize, height: contentSize))
+        superScrollView?.addSubview(superContenView!)
         
         // Lägga till vår scrollvy i vår container
         view.addSubview(superScrollView!)
         
         // Lägga till en tap gesture (för att skapa nya bubblor)
         let tap = UITapGestureRecognizer(target: self, action: #selector(didTap(_:)))
-        sueperContentView!.addGestureRecognizer(tap)
+        superContenView!.addGestureRecognizer(tap)
+        
+        // Ladda bubblor och linjer!
+        load()
+        
+    }
+    
+    func load() {
+        if let bubbleArray = UserDefaults.standard.array(forKey: "bubbles") as? [[String:String]] {
+            for data in bubbleArray {
+                let center: CGPoint = NSCoder.cgPoint(for: data["center"]!)
+                let bubbleView = BubbleView(center)
+                bubbleView.uuid = data["uuid"]!
+                superContenView?.addSubview(bubbleView)
+                bubbleView.text = data["text"]!
+                bubbleView.delegate = self
+                
+            }
+        }
+        if let lineArray = UserDefaults.standard.array(forKey: "lines") as? [[String:String]] {
+            for data in lineArray {
+                let fromUuid = data["fromUuid"]
+                
+                let toUuid = data["toUuid"]
+                if let fromView = bubbleViewForUuid(uuid: fromUuid!) {
+                    if let toView = bubbleViewForUuid(uuid: toUuid!) {
+                        // Connect bubbles!
+                        let line = LineView(from: fromView, to: toView)
+                        superContenView!.insertSubview(line, at: 0)
+                        //Lägg till i array för bubblor
+                        fromView.lines.append(line)
+                        toView.lines.append(line)
+                        
+                    }
+                }
+            }
+        }
+    }
+    
+    func bubbleViewForUuid(uuid: String) -> BubbleView? {
+        for view in (superContenView?.subviews)! {
+            if view.isKind(of: BubbleView.self) {
+                let bubbleView = view as! BubbleView
+                if bubbleView.uuid == uuid {
+                    return bubbleView
+                }
+            }
+        }
+        return nil
+    }
+    
+    func save() {
+        var bubbleViews = [[String:String]]()
+        var lineViews = [[String:String]]()
+        
+        for view in (superContenView?.subviews)! {
+            if view.isKind(of: BubbleView.self) {
+                let bubbleView = view as! BubbleView
+                bubbleViews.append(bubbleView.data())
+            } else if view.isKind(of: LineView.self) {
+                let lineView = view as! LineView
+                lineViews.append(lineView.data())
+            }
+        }
+        if bubbleViews.count > 0 {
+            UserDefaults.standard.set(bubbleViews, forKey: "bubbles")
+            if lineViews.count > 0 {
+                UserDefaults.standard.set(lineViews, forKey: "lines")
+            }
+        }
         
     }
     
@@ -44,27 +113,32 @@ class ViewController: UIViewController, BubbleViewDelegate, UIScrollViewDelegate
         //TODO: Hitta CGPoint och lägg till bubbla
         print("Did tap")
         if selectedBubble != nil {
-            selectedBubble?.deselect()
+            selectedBubble?.selected = false
             selectedBubble = nil
         } else {
-            let tapPoints = gesture.location(in: sueperContentView!)
+            let tapPoints = gesture.location(in: superContenView!)
             let bubble = BubbleView(tapPoints)
             bubble.delegate = self
-            sueperContentView!.addSubview(bubble)
+            superContenView!.addSubview(bubble)
+            save()
         }
     }
     
     //MARK: - BubbleViewDelegate
+    func didPan(_ bubble: BubbleView) {
+        save()
+    }
     
     func didEdit(_ bubble: BubbleView) {
-        //TODO: - Visa popup med textfält
+        // Visa popup med textfält
         let textInput = UIAlertController(title: "Edit bubble text", message: "Enter the text you want in the bubble", preferredStyle: .alert)
         textInput.addTextField { (textField) in
-            textField.text = bubble.label.text
+            textField.text = bubble.text
         }
         textInput.addAction(UIAlertAction(title: "Save", style: .default, handler: { (action) in
             let textField = textInput.textFields![0] as UITextField
-            bubble.label.text = textField.text
+            bubble.text = textField.text!
+            self.save()
         }))
         
         present(textInput, animated: true, completion: nil)
@@ -75,25 +149,27 @@ class ViewController: UIViewController, BubbleViewDelegate, UIScrollViewDelegate
             if bubble == selectedBubble {
                 // Delete bubble
                 bubble.delete()
+                save()
                 
             } else {
-                //TODO: Connect bubbles!
+                // Connect bubbles!
                 let line = LineView(from: selectedBubble!, to: bubble)
-                sueperContentView!.insertSubview(line, at: 0)
+                superContenView!.insertSubview(line, at: 0)
                 //Lägg till i array för bubblor
                 selectedBubble?.lines.append(line)
                 bubble.lines.append(line)
+                save()
             }
-            //TODO: Deselect selectedBubble
-            selectedBubble?.deselect()
+            // Deselect selectedBubble
+            selectedBubble?.selected = false
             selectedBubble = nil
         } else {
             selectedBubble = bubble
-            selectedBubble?.select()
+            selectedBubble?.selected = true
         }
     }
     // MARK: - UIScrollViewDelegate zoom
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        return sueperContentView
+        return superContenView
     }
 }
